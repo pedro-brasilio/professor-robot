@@ -1,58 +1,78 @@
-# Robô Professor em C#
+# Robô Professor 🤖
 
-Projeto simples desenvolvido em C# para praticar lógica de programação, estruturas condicionais, repetição e interação pelo terminal.
+Aplicação web interativa que ajuda crianças a aprender matemática de forma divertida. Um "robô professor" cumprimenta o usuário e oferece operações básicas: soma, subtração, multiplicação, divisão e tabuada, com explicações didáticas e animações.
 
-O programa funciona como um "robô professor", solicitando o nome do usuário e oferecendo opções de ajuda com operações matemáticas básicas.
+O projeto é dividido em **backend** (API em C# / ASP.NET) e **frontend** (HTML, CSS e JavaScript).
+
+## Estrutura do projeto
+
+```text
+professor-robot/
+├── backend/                 # API em C# (ASP.NET Minimal API)
+│   ├── Program.cs           # Endpoints das operações matemáticas
+│   ├── amigo_robot.csproj
+│   └── amigo_robot.slnx
+├── frontend/                # Interface web (arquivos estáticos)
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css
+└── README.md
+```
+
+O backend serve os arquivos do `frontend/` e expõe os endpoints de cálculo. Assim o frontend e o backend ficam organizados em pastas separadas, mas rodam juntos com um único comando.
 
 ## Funcionalidades
 
 * Solicita o nome do usuário;
-* Realiza soma entre dois números;
-* Realiza subtração entre dois números;
-* Realiza multiplicação entre dois números;
-* Exibe a tabuada de um número de 1 a 10;
-* Possui menu interativo no terminal;
-* Permite encerrar o programa pela opção de saída.
+* Soma, subtração, multiplicação e divisão entre dois números;
+* Exibe a tabuada de um número (de 1 a 10);
+* Explicações didáticas de cada operação;
+* Interface amigável com mascote animado.
 
 ## Tecnologias utilizadas
 
-* C#
-* .NET
-* Aplicação Console
+* C# / .NET 10 (ASP.NET Minimal API)
+* HTML, CSS e JavaScript (sem frameworks)
+
+## API
+
+Todos os endpoints recebem `POST` com corpo JSON.
+
+| Endpoint          | Corpo                    | Resposta                                  |
+| ----------------- | ------------------------ | ----------------------------------------- |
+| `/api/somar`      | `{ "a": 7, "b": 5 }`     | `{ "a": 7, "b": 5, "resultado": 12 }`     |
+| `/api/subtrair`   | `{ "a": 7, "b": 5 }`     | `{ "a": 7, "b": 5, "resultado": 2 }`      |
+| `/api/multiplicar`| `{ "a": 7, "b": 5 }`     | `{ "a": 7, "b": 5, "resultado": 35 }`     |
+| `/api/dividir`    | `{ "a": 10, "b": 2 }`    | `{ "a": 10, "b": 2, "resultado": 5 }`     |
+| `/api/tabuada`    | `{ "numero": 7 }`        | `{ "numero": 7, "linhas": [...] }`        |
+
+Divisão por zero retorna `400 Bad Request` com uma mensagem amigável.
 
 ## Como executar o projeto
 
 1. Clone este repositório:
 
-```bash
-git clone https://github.com/pedro-brasilio/professor-robot.git
-```
+   ```bash
+   git clone https://github.com/pedro-brasilio/professor-robot.git
+   ```
 
-2. Entre na pasta do projeto:
+2. Entre na pasta do backend:
 
-```bash
-cd professor-robot
-```
+   ```bash
+   cd professor-robot/backend
+   ```
 
-3. Execute o programa:
+3. Execute a aplicação:
 
-```bash
-dotnet run
-```
+   ```bash
+   dotnet run
+   ```
 
-## Menu do programa
-
-```text
-1 - Somar
-2 - Subtrair
-3 - Multiplicar
-4 - Ver a tabuada de um número
-5 - Sair
-```
+4. Abra no navegador o endereço exibido no terminal (por exemplo, `http://localhost:5000`).
 
 ## Objetivo
 
-Este projeto foi criado com foco em aprendizado e prática dos conceitos básicos de programação em C#, como entrada e saída de dados, variáveis, condições, laços de repetição e operações matemáticas.
+Projeto criado com foco em aprendizado e prática: lógica de programação em C#, criação de uma API web e integração com um frontend, mantendo backend e frontend bem organizados.
 
 ## Autor
 
