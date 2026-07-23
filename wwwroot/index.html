@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Robô Professor: aprenda matemática de forma divertida! Soma, subtração, multiplicação, divisão e tabuada para crianças.">
+  <title>Robô Professor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-content">
+      <span class="app-eyebrow">✨ Aula de matemática</span>
+      <h1 class="app-title">Robô <span class="highlight">Professor</span></h1>
+    </div>
+  </header>
+
+  <!-- Main Card -->
+  <main class="main-card" id="mainCard">
+    <div class="wipe-overlay"></div>
+    <div class="main-card-inner">
+
+      <!-- Mascote + Saudação -->
+      <div class="mascot-row">
+        <div class="mascot" id="mascot">
+          <!-- SVG Robot Premium -->
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="mascot-svg">
+            <!-- Antenna -->
+            <rect x="38" y="2" width="4" height="14" rx="2" fill="#D0D5DE"/>
+            <circle cx="40" cy="4" r="5" class="antenna-tip"/>
+            <!-- Head -->
+            <rect x="8" y="16" width="64" height="52" rx="18" class="robot-head"/>
+            <!-- Face screen -->
+            <rect x="16" y="26" width="48" height="32" rx="12" class="robot-face"/>
+            <!-- Left eye -->
+            <rect x="26" y="36" width="8" height="12" rx="4" class="robot-eye robot-eye-left"/>
+            <!-- Right eye -->
+            <rect x="46" y="36" width="8" height="12" rx="4" class="robot-eye robot-eye-right"/>
+            <!-- Mouth (smile) -->
+            <path d="M32 52 C34 56, 46 56, 48 52" stroke-width="2.5" stroke-linecap="round" fill="none" class="robot-mouth"/>
+            <!-- Ear left -->
+            <rect x="2" y="34" width="8" height="14" rx="4" class="robot-ear"/>
+            <!-- Ear right -->
+            <rect x="70" y="34" width="8" height="14" rx="4" class="robot-ear"/>
+            <!-- Cheek blush left -->
+            <circle cx="22" cy="48" r="4" class="robot-cheek"/>
+            <!-- Cheek blush right -->
+            <circle cx="58" cy="48" r="4" class="robot-cheek"/>
+          </svg>
+        </div>
+        <div class="mascot-speech">
+          <div class="mascot-greeting" id="mascotGreeting">Olá! Eu sou o Robô Professor</div>
+          <div class="mascot-subtitle" id="mascotSubtitle">Vamos aprender matemática juntos?</div>
+        </div>
+      </div>
+
+      <!-- Área de Resultados -->
+      <div class="terminal" id="terminal" aria-live="polite"></div>
+
+      <!-- Área de Input / Menu -->
+      <div class="stage-input" id="stageArea"></div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p class="footer-text">Aprender matemática pode ser divertido! 🚀</p>
+    <div class="footer-dots">
+      <span class="footer-dot"></span>
+      <span class="footer-dot"></span>
+      <span class="footer-dot"></span>
+    </div>
+  </footer>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
