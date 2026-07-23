@@ -1,738 +1,88 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Robô Professor</title>
-<style>
-  :root{
-    --board:#24352c;
-    --board-edge:#182219;
-    --wood:#8a5a34;
-    --wood-dark:#5c3a20;
-    --wood-light:#a5713f;
-    --chalk:#f3efe3;
-    --chalk-dim:#cfcabb;
-    --yellow:#eac24b;
-    --blue:#6fb6d9;
-    --coral:#e2795a;
-    --mint:#8fcb9b;
-    --lilac:#b79fd1;
-    --mono: ui-monospace,"Cascadia Code","SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
-    --sans: "Segoe UI","Nunito Sans",-apple-system,BlinkMacSystemFont,sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html,body{
-    margin:0;
-    min-height:100%;
-    background:
-      radial-gradient(ellipse at 50% -10%, #3a2c1e 0%, #1b140d 55%, #0f0b07 100%);
-    color:var(--chalk);
-    font-family:var(--sans);
-  }
-  body{
-    display:flex;
-    justify-content:center;
-    padding:clamp(16px,4vw,56px) 16px 40px;
-  }
-  .stage{
-    width:100%;
-    max-width:760px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-  }
-
-  /* ---------- frame ---------- */
-  .frame{
-    position:relative;
-    width:100%;
-    padding:22px;
-    border-radius:18px;
-    background:
-      linear-gradient(155deg,var(--wood-light),var(--wood) 45%,var(--wood-dark) 100%);
-    box-shadow:
-      0 30px 60px -20px rgba(0,0,0,.65),
-      inset 0 0 0 1px rgba(255,255,255,.06);
-  }
-  .bolt{
-    position:absolute;
-    width:10px;height:10px;
-    border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, #d8b184, #4a2e18 75%);
-    box-shadow:0 1px 2px rgba(0,0,0,.6);
-  }
-  .bolt.tl{top:12px;left:12px;} .bolt.tr{top:12px;right:12px;}
-  .bolt.bl{bottom:12px;left:12px;} .bolt.br{bottom:12px;right:12px;}
-
-  /* ---------- mascot ---------- */
-  .mascot{
-    position:absolute;
-    top:-34px;
-    right:34px;
-    width:64px;height:64px;
-    z-index:5;
-    filter:drop-shadow(0 8px 10px rgba(0,0,0,.45));
-    animation:idleFloat 4s ease-in-out infinite;
-  }
-  @keyframes idleFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
-  .mascot .antenna{
-    position:absolute;
-    left:50%; top:-14px;
-    width:2px;height:16px;
-    background:#8a8f8c;
-    transform:translateX(-50%);
-  }
-  .mascot .antenna .tip{
-    position:absolute;
-    top:-6px;left:50%;
-    width:8px;height:8px;
-    border-radius:50%;
-    background:var(--yellow);
-    transform:translateX(-50%);
-    box-shadow:0 0 6px 1px var(--yellow);
-    animation:blinkTip 2.6s ease-in-out infinite;
-  }
-  .mascot .head{
-    position:absolute;
-    inset:0;
-    border-radius:22px;
-    background:linear-gradient(160deg,#e7ebe9,#b9c3bf);
-    box-shadow:inset 0 -6px 8px rgba(0,0,0,.15), inset 0 3px 4px rgba(255,255,255,.6);
-  }
-  .mascot .face{
-    position:absolute;
-    left:8px;right:8px;top:16px;bottom:20px;
-    border-radius:12px;
-    background:#1c2b25;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-  }
-  .mascot .eye{
-    width:7px;height:10px;
-    border-radius:3px;
-    background:var(--blue);
-    box-shadow:0 0 6px 1px rgba(111,182,217,.7);
-    animation:blinkEyes 4.4s ease-in-out infinite;
-  }
-  .mascot.thinking .eye{
-    background:var(--yellow);
-    box-shadow:0 0 6px 1px rgba(234,194,75,.8);
-    animation:thinkEyes .5s ease-in-out infinite;
-  }
-  .mascot.thinking .antenna .tip{animation:spinTip .5s linear infinite;}
-  .mascot.happy{animation:hop .55s ease;}
-  .mascot.happy .eye{background:var(--mint); box-shadow:0 0 8px 2px rgba(143,203,155,.85);}
-  @keyframes blinkTip{0%,88%,100%{opacity:1;}92%{opacity:.25;}}
-  @keyframes blinkEyes{0%,90%,100%{transform:scaleY(1);}94%{transform:scaleY(.15);}}
-  @keyframes thinkEyes{0%,100%{transform:scaleY(1);}50%{transform:scaleY(.4);}}
-  @keyframes spinTip{0%{box-shadow:0 0 4px 1px var(--yellow);}50%{box-shadow:0 0 10px 4px var(--yellow);}100%{box-shadow:0 0 4px 1px var(--yellow);}}
-  @keyframes hop{0%{transform:translateY(0);}35%{transform:translateY(-14px) rotate(-4deg);}60%{transform:translateY(0) rotate(3deg);}100%{transform:translateY(0);}}
-
-  /* ---------- board ---------- */
-  .board{
-    position:relative;
-    background:var(--board);
-    border-radius:10px;
-    padding:26px clamp(16px,3vw,30px) 20px;
-    box-shadow:
-      inset 0 0 0 2px var(--board-edge),
-      inset 0 40px 60px -40px rgba(0,0,0,.6),
-      inset 0 -30px 50px -40px rgba(0,0,0,.5);
-    overflow:hidden;
-  }
-  .board::before{
-    content:"";
-    position:absolute; inset:0;
-    pointer-events:none;
-    background-image:
-      radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,.10), transparent 60%),
-      radial-gradient(1px 1px at 78% 14%, rgba(255,255,255,.08), transparent 60%),
-      radial-gradient(1px 1px at 34% 78%, rgba(255,255,255,.09), transparent 60%),
-      radial-gradient(1px 1px at 62% 62%, rgba(255,255,255,.07), transparent 60%),
-      radial-gradient(1px 1px at 88% 84%, rgba(255,255,255,.09), transparent 60%),
-      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px);
-  }
-  .board-head{position:relative;}
-  .eyebrow{
-    margin:0 0 4px;
-    font-family:var(--mono);
-    font-size:11px;
-    letter-spacing:.22em;
-    text-transform:uppercase;
-    color:var(--yellow);
-    opacity:.9;
-  }
-  .title{
-    margin:0;
-    font-family:var(--mono);
-    font-weight:700;
-    font-size:clamp(26px,5vw,36px);
-    letter-spacing:.03em;
-    color:var(--chalk);
-    text-shadow:0 0 10px rgba(243,239,227,.18);
-    animation:draw 900ms steps(24) both;
-  }
-  .chalk-rule{
-    margin:14px 0 16px;
-    height:2px;
-    border-radius:2px;
-    background:repeating-linear-gradient(90deg,var(--chalk-dim) 0 8px, transparent 8px 14px);
-    opacity:.5;
-  }
-  @keyframes draw{from{clip-path:inset(0 100% 0 0);}to{clip-path:inset(0 0 0 0);}}
-
-  /* ---------- terminal / log ---------- */
-  .terminal{
-    position:relative;
-    display:flex;
-    flex-direction:column;
-    gap:9px;
-    max-height:290px;
-    overflow-y:auto;
-    padding-right:4px;
-    margin-bottom:16px;
-    scrollbar-width:thin;
-    scrollbar-color:var(--wood) transparent;
-  }
-  .line{
-    font-family:var(--mono);
-    font-size:14.5px;
-    line-height:1.5;
-    animation:lineIn .32s ease both;
-  }
-  @keyframes lineIn{from{opacity:0; transform:translateY(4px);}to{opacity:1; transform:translateY(0);}}
-  .line.fade-out{animation:fadeOut .5s ease forwards;}
-  @keyframes fadeOut{from{opacity:1; transform:translateY(0);}to{opacity:0; transform:translateY(-6px);}}
-  .line.bot{color:var(--chalk); max-width:88%;}
-  .line.bot b{color:var(--yellow); font-weight:600;}
-  .line.user{
-    align-self:flex-end;
-    color:var(--blue);
-    text-align:right;
-  }
-  .line.error{color:var(--coral);}
-  .line.explain{
-    color:var(--chalk-dim);
-    font-size:13.5px;
-    line-height:1.55;
-    padding-left:11px;
-    border-left:2px dashed var(--accent, var(--chalk-dim));
-  }
-  .line.equation{
-    font-size:20px;
-    font-weight:700;
-    color:var(--chalk);
-    display:inline-block;
-    animation:lineIn .3s ease both, drawEq .55s ease both .15s;
-  }
-  @keyframes drawEq{from{clip-path:inset(0 100% 0 0);}to{clip-path:inset(0 0 0 0);}}
-  .line.equation .op{color:var(--yellow); padding:0 8px;}
-  .line.equation .res{
-    position:relative;
-    color:var(--mint);
-    padding:0 5px;
-  }
-  .line.equation .res::before,
-  .line.equation .res::after{
-    content:"";
-    position:absolute;
-    inset:-7px -11px;
-    border:2px solid var(--yellow);
-    border-radius:52% 48% 47% 53% / 51% 47% 53% 49%;
-    opacity:0;
-    transform:scale(.6) rotate(-4deg);
-    animation:circleIn .45s ease-out forwards;
-    animation-delay:.75s;
-    pointer-events:none;
-  }
-  .line.equation .res::after{
-    inset:-9px -13px;
-    border-color:rgba(234,194,75,.5);
-    transform:scale(.6) rotate(3deg);
-    animation-delay:.85s;
-  }
-  @keyframes circleIn{
-    from{opacity:0; transform:scale(.5) rotate(-6deg);}
-    60%{opacity:1; transform:scale(1.08) rotate(2deg);}
-    to{opacity:1; transform:scale(1) rotate(-2deg);}
-  }
-  .table-grid{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:4px;
-    font-family:var(--mono);
-    font-size:14.5px;
-  }
-  .table-grid span{opacity:0; animation:lineIn .3s ease forwards;}
-
-  /* ---------- controls ---------- */
-  .stage-input{position:relative;}
-  label{
-    display:block;
-    font-family:var(--sans);
-    font-size:12.5px;
-    color:var(--chalk-dim);
-    margin-bottom:6px;
-  }
-  .row{display:flex; gap:10px; flex-wrap:wrap;}
-  input[type=text],input[type=number]{
-    flex:1;
-    min-width:120px;
-    background:rgba(243,239,227,.06);
-    border:1px dashed rgba(243,239,227,.35);
-    border-radius:8px;
-    padding:11px 12px;
-    color:var(--chalk);
-    font-family:var(--mono);
-    font-size:15px;
-    outline-offset:2px;
-  }
-  input::placeholder{color:rgba(243,239,227,.35);}
-  input:focus-visible, button:focus-visible, .tile:focus-visible{
-    outline:2px dashed var(--yellow);
-    outline-offset:3px;
-  }
-  input.shake{animation:shake .4s;}
-  @keyframes shake{20%,60%{transform:translateX(-6px);}40%,80%{transform:translateX(6px);}}
-
-  button{
-    font-family:var(--sans);
-    font-weight:700;
-    font-size:14px;
-    border:none;
-    border-radius:8px;
-    padding:11px 18px;
-    cursor:pointer;
-    color:#182219;
-    background:var(--yellow);
-    transition:transform .12s ease, filter .12s ease;
-  }
-  button:hover{filter:brightness(1.08); transform:translateY(-1px);}
-  button:active{transform:translateY(0);}
-  button:disabled{opacity:.6; cursor:default; transform:none;}
-  button.ghost{
-    background:transparent;
-    color:var(--chalk);
-    border:1px solid rgba(243,239,227,.35);
-  }
-
-  .menu{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:10px;
-    margin-bottom:4px;
-  }
-  .tile{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    text-align:left;
-    background:rgba(243,239,227,.05);
-    border:1px dashed rgba(243,239,227,.3);
-    border-left:4px solid var(--accent,var(--chalk-dim));
-    border-radius:9px;
-    padding:12px 13px;
-    color:var(--chalk);
-    font-family:var(--sans);
-    font-weight:600;
-    font-size:14px;
-    cursor:pointer;
-    transition:transform .14s ease, background .14s ease, border-color .14s ease;
-  }
-  .tile:hover{transform:translateY(-2px); background:rgba(243,239,227,.09); border-color:var(--accent,rgba(243,239,227,.3));}
-  .tile .ic{font-size:18px;}
-  .tile[data-op="add"]{--accent:var(--blue);}
-  .tile[data-op="sub"]{--accent:var(--coral);}
-  .tile[data-op="mul"]{--accent:var(--mint);}
-  .tile[data-op="div"]{--accent:var(--lilac);}
-  .tile[data-op="tab"]{--accent:var(--yellow);}
-  .tile[data-op="exit"]{--accent:var(--chalk-dim);}
-  .tile.active{background:rgba(243,239,227,.13);}
-
-  .panel{
-    margin-top:12px;
-    padding:16px;
-    border-radius:10px;
-    background:rgba(0,0,0,.15);
-    border:1px solid rgba(243,239,227,.1);
-    border-top:3px solid var(--accent, var(--chalk-dim));
-  }
-  .eq-row{
-    display:flex;
-    align-items:flex-end;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-  .eq-row .sym{
-    font-family:var(--mono);
-    font-size:22px;
-    font-weight:700;
-    color:var(--yellow);
-    padding-bottom:11px;
-  }
-  .actions{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;}
-
-  /* ---------- wipe / eraser ---------- */
-  .wipe-overlay{
-    position:absolute;
-    top:0; bottom:0; left:-30%;
-    width:30%;
-    background:linear-gradient(90deg, transparent, rgba(230,226,215,.9) 45%, rgba(230,226,215,.9) 55%, transparent);
-    border-radius:6px;
-    pointer-events:none;
-    display:none;
-  }
-  .board.wiping .wipe-overlay{
-    display:block;
-    animation:sweep .8s linear;
-  }
-  @keyframes sweep{from{left:-30%;}to{left:100%;}}
-
-  /* ---------- tray ---------- */
-  .tray{
-    display:flex;
-    justify-content:center;
-    gap:14px;
-    margin-top:14px;
-    height:16px;
-  }
-  .chalk-stick{
-    width:44px;height:9px;
-    border-radius:3px;
-    background:linear-gradient(180deg,#fff,#d8d3c4);
-    box-shadow:0 2px 3px rgba(0,0,0,.35);
-    transform:rotate(-3deg);
-  }
-  .chalk-stick.c2{background:linear-gradient(180deg,var(--coral),#b9573a); transform:rotate(2deg);}
-  .eraser{
-    width:52px;height:14px;
-    border-radius:3px;
-    background:linear-gradient(180deg,#6b4225,#4a2c17);
-    box-shadow:0 2px 3px rgba(0,0,0,.35);
-    position:relative;
-  }
-  .eraser::before{
-    content:"";
-    position:absolute; inset:2px 6px auto 6px; height:5px;
-    background:#c7c1b2;
-    border-radius:2px;
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
-  }
-
-  @media (max-width:480px){
-    .mascot{right:16px; top:-28px; width:52px; height:52px;}
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Robô Professor: aprenda matemática de forma divertida! Soma, subtração, multiplicação, divisão e tabuada para crianças.">
+  <title>Robô Professor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
 <div class="stage">
-  <div class="frame">
-    <span class="bolt tl"></span><span class="bolt tr"></span>
-    <span class="bolt bl"></span><span class="bolt br"></span>
 
-    <div class="mascot" id="mascot">
-      <div class="antenna"><span class="tip"></span></div>
-      <div class="head"><div class="face"><span class="eye"></span><span class="eye"></span></div></div>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-content">
+      <span class="app-eyebrow">✨ Aula de matemática</span>
+      <h1 class="app-title">Robô <span class="highlight">Professor</span></h1>
     </div>
+  </header>
 
-    <div class="board" id="board">
-      <div class="wipe-overlay"></div>
-      <header class="board-head">
-        <p class="eyebrow">Aula de matemática</p>
-        <h1 class="title">Robô Professor</h1>
-        <div class="chalk-rule"></div>
-      </header>
+  <!-- Main Card -->
+  <main class="main-card" id="mainCard">
+    <div class="wipe-overlay"></div>
+    <div class="main-card-inner">
 
+      <!-- Mascote + Saudação -->
+      <div class="mascot-row">
+        <div class="mascot" id="mascot">
+          <!-- SVG Robot Premium -->
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="mascot-svg">
+            <!-- Antenna -->
+            <rect x="38" y="2" width="4" height="14" rx="2" fill="#D0D5DE"/>
+            <circle cx="40" cy="4" r="5" class="antenna-tip"/>
+            <!-- Head -->
+            <rect x="8" y="16" width="64" height="52" rx="18" class="robot-head"/>
+            <!-- Face screen -->
+            <rect x="16" y="26" width="48" height="32" rx="12" class="robot-face"/>
+            <!-- Left eye -->
+            <rect x="26" y="36" width="8" height="12" rx="4" class="robot-eye robot-eye-left"/>
+            <!-- Right eye -->
+            <rect x="46" y="36" width="8" height="12" rx="4" class="robot-eye robot-eye-right"/>
+            <!-- Mouth (smile) -->
+            <path d="M32 52 C34 56, 46 56, 48 52" stroke-width="2.5" stroke-linecap="round" fill="none" class="robot-mouth"/>
+            <!-- Ear left -->
+            <rect x="2" y="34" width="8" height="14" rx="4" class="robot-ear"/>
+            <!-- Ear right -->
+            <rect x="70" y="34" width="8" height="14" rx="4" class="robot-ear"/>
+            <!-- Cheek blush left -->
+            <circle cx="22" cy="48" r="4" class="robot-cheek"/>
+            <!-- Cheek blush right -->
+            <circle cx="58" cy="48" r="4" class="robot-cheek"/>
+          </svg>
+        </div>
+        <div class="mascot-speech">
+          <div class="mascot-greeting" id="mascotGreeting">Olá! Eu sou o Robô Professor</div>
+          <div class="mascot-subtitle" id="mascotSubtitle">Vamos aprender matemática juntos?</div>
+        </div>
+      </div>
+
+      <!-- Área de Resultados -->
       <div class="terminal" id="terminal" aria-live="polite"></div>
 
+      <!-- Área de Input / Menu -->
       <div class="stage-input" id="stageArea"></div>
-    </div>
 
-    <div class="tray">
-      <span class="chalk-stick c1"></span>
-      <span class="chalk-stick c2"></span>
-      <span class="eraser"></span>
     </div>
-  </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p class="footer-text">Aprender matemática pode ser divertido! 🚀</p>
+    <div class="footer-dots">
+      <span class="footer-dot"></span>
+      <span class="footer-dot"></span>
+      <span class="footer-dot"></span>
+    </div>
+  </footer>
+
 </div>
 
-<script>
-(function(){
-  var terminal = document.getElementById('terminal');
-  var stageArea = document.getElementById('stageArea');
-  var mascot = document.getElementById('mascot');
-  var board = document.getElementById('board');
-  var state = { name:null, openOp:null };
+<script src="app.js"></script>
 
-  function addLine(html, cls, accent){
-    var d = document.createElement('div');
-    d.className = 'line ' + (cls||'bot');
-    if(accent) d.style.setProperty('--accent', accent);
-    d.innerHTML = html;
-    terminal.appendChild(d);
-    terminal.scrollTop = terminal.scrollHeight;
-    return d;
-  }
-
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g, function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-    });
-  }
-
-  function parseIntStrict(v){
-    if(v===null || v===undefined) return NaN;
-    v = String(v).trim();
-    if(!/^-?\d+$/.test(v)) return NaN;
-    return parseInt(v,10);
-  }
-
-  /* calls the real C# backend, keeping the mascot "thinking" for at least minMs */
-  function withThinking(requestFactory, minMs){
-    mascot.classList.add('thinking');
-    var minDelay = new Promise(function(res){ setTimeout(res, minMs || 420); });
-    return Promise.all([requestFactory(), minDelay]).then(function(results){
-      mascot.classList.remove('thinking');
-      mascot.classList.add('happy');
-      setTimeout(function(){ mascot.classList.remove('happy'); }, 600);
-      return results[0];
-    }, function(err){
-      mascot.classList.remove('thinking');
-      throw err;
-    });
-  }
-
-  function postJson(url, body){
-    return fetch(url, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(body)
-    }).then(function(r){
-      if(!r.ok) throw new Error('Falha na requisição: ' + r.status);
-      return r.json();
-    });
-  }
-
-  /* ---------- step 1: name ---------- */
-  function renderNameForm(){
-    var question = addLine('🤖 Qual é o seu nome?');
-    stageArea.innerHTML =
-      '<div class="row">' +
-        '<input type="text" id="nameInput" placeholder="Digite seu nome" autofocus>' +
-        '<button id="nameGo">Entrar ▸</button>' +
-      '</div>';
-    var input = document.getElementById('nameInput');
-    var go = document.getElementById('nameGo');
-    function submit(){
-      var v = input.value.trim();
-      if(!v){ input.classList.add('shake'); setTimeout(function(){input.classList.remove('shake');},400); return; }
-      addLine(escapeHtml(v), 'user');
-      state.name = v;
-      question.classList.add('fade-out');
-      setTimeout(function(){ question.remove(); }, 500);
-      mascot.classList.add('thinking');
-      setTimeout(function(){
-        mascot.classList.remove('thinking');
-        mascot.classList.add('happy');
-        setTimeout(function(){ mascot.classList.remove('happy'); }, 600);
-        var greet = addLine('🤖 Prazer em te conhecer, <b>'+escapeHtml(v)+'</b>! 😄');
-        renderMenu();
-        setTimeout(function(){
-          greet.classList.add('fade-out');
-          setTimeout(function(){
-            greet.remove();
-            addLine('🤖 Hoje vamos aprender: <b>Somar ➕</b>, <b>Subtrair ➖</b>, <b>Multiplicar ✖️</b>, <b>Dividir ➗</b> e a <b>Tabuada 📋</b>!');
-          }, 500);
-        }, 1800);
-      }, 500);
-    }
-    go.addEventListener('click', submit);
-    input.addEventListener('keydown', function(e){ if(e.key==='Enter') submit(); });
-  }
-
-  /* ---------- step 2: menu ---------- */
-  var OPS = [
-    {key:'add', icon:'➕', label:'Somar', endpoint:'somar', symbol:'+', color:'var(--blue)'},
-    {key:'sub', icon:'➖', label:'Subtrair', endpoint:'subtrair', symbol:'−', color:'var(--coral)'},
-    {key:'mul', icon:'✖️', label:'Multiplicar', endpoint:'multiplicar', symbol:'×', color:'var(--mint)'},
-    {key:'div', icon:'➗', label:'Dividir', endpoint:'dividir', symbol:'÷', color:'var(--lilac)'},
-    {key:'tab', icon:'📋', label:'Tabuada', color:'var(--yellow)'},
-    {key:'exit', icon:'👋', label:'Sair', color:'var(--chalk-dim)'}
-  ];
-
-  function opByKey(key){
-    for(var i=0;i<OPS.length;i++){ if(OPS[i].key===key) return OPS[i]; }
-    return null;
-  }
-
-  function renderMenu(){
-    var tiles = OPS.map(function(o){
-      return '<button type="button" class="tile" data-op="'+o.key+'"><span class="ic">'+o.icon+'</span>'+o.label+'</button>';
-    }).join('');
-    stageArea.innerHTML =
-      '<div class="menu">'+tiles+'</div>' +
-      '<div id="panelHost"></div>';
-    stageArea.querySelectorAll('.tile').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var op = btn.getAttribute('data-op');
-        if(op==='exit'){ doExit(); return; }
-        stageArea.querySelectorAll('.tile').forEach(function(b){ b.classList.remove('active'); });
-        if(state.openOp === op){ state.openOp = null; document.getElementById('panelHost').innerHTML=''; return; }
-        state.openOp = op;
-        btn.classList.add('active');
-        clearBoardLog();
-        renderPanel(op);
-      });
-    });
-  }
-
-  function clearBoardLog(){
-    board.classList.add('wiping');
-    setTimeout(function(){ terminal.innerHTML = ''; }, 420);
-    setTimeout(function(){ board.classList.remove('wiping'); }, 900);
-  }
-
-  function renderPanel(opKey){
-    var host = document.getElementById('panelHost');
-    var op = opByKey(opKey);
-
-    if(opKey==='tab'){
-      host.innerHTML =
-        '<div class="panel" style="--accent:'+op.color+'">' +
-          '<label>Qual tabuada você quer ver?</label>' +
-          '<div class="row"><input type="text" inputmode="numeric" id="tabNum" placeholder="ex: 7"></div>' +
-          '<div class="actions"><button id="tabGo">Ver tabuada 📋</button></div>' +
-        '</div>';
-      document.getElementById('tabGo').addEventListener('click', function(){
-        var input = document.getElementById('tabNum');
-        var btn = document.getElementById('tabGo');
-        var n = parseIntStrict(input.value);
-        if(isNaN(n)){ badNumber(input); return; }
-        btn.disabled = true;
-        withThinking(function(){ return postJson('/api/tabuada', { numero:n }); })
-          .then(function(data){ showTabuada(data.numero, data.linhas); })
-          .catch(function(){ addLine('🤖 Algo deu errado ao calcular a tabuada. Tente de novo.', 'bot error'); })
-          .then(function(){ btn.disabled = false; });
-      });
-      return;
-    }
-
-    if(opKey==='exit') return;
-
-    var label1 = opKey==='sub' ? 'Número maior' : 'Primeiro número';
-    var label2 = opKey==='sub' ? 'Número a tirar' : 'Segundo número';
-    host.innerHTML =
-      '<div class="panel" style="--accent:'+op.color+'">' +
-        '<div class="eq-row">' +
-          '<div><label>'+label1+'</label><input type="text" inputmode="numeric" id="opA" style="width:120px" placeholder="0"></div>' +
-          '<span class="sym">'+op.symbol+'</span>' +
-          '<div><label>'+label2+'</label><input type="text" inputmode="numeric" id="opB" style="width:120px" placeholder="0"></div>' +
-        '</div>' +
-        '<div class="actions"><button id="opGo">Calcular =</button></div>' +
-      '</div>';
-    document.getElementById('opGo').addEventListener('click', function(){
-      var ia = document.getElementById('opA'), ib = document.getElementById('opB');
-      var btn = document.getElementById('opGo');
-      var a = parseIntStrict(ia.value), b = parseIntStrict(ib.value);
-      if(isNaN(a)){ badNumber(ia); return; }
-      if(isNaN(b)){ badNumber(ib); return; }
-      if(opKey==='div' && b===0){
-        ib.classList.add('shake');
-        setTimeout(function(){ ib.classList.remove('shake'); }, 400);
-        addLine('🤖 Não dá pra dividir por zero! Escolha outro número. 🚫', 'bot error');
-        return;
-      }
-      btn.disabled = true;
-      withThinking(function(){ return postJson('/api/'+op.endpoint, { a:a, b:b }); })
-        .then(function(data){
-          showResult(op.symbol, data.a, data.b, data.resultado);
-          addLine(explainResult(opKey, data.a, data.b, data.resultado), 'bot explain', op.color);
-        })
-        .catch(function(){ addLine('🤖 Algo deu errado ao calcular. Tente de novo.', 'bot error'); })
-        .then(function(){ btn.disabled = false; });
-    });
-  }
-
-  function badNumber(input){
-    input.classList.add('shake');
-    setTimeout(function(){ input.classList.remove('shake'); }, 400);
-    addLine('🤖 Isso não parece um número. Tente algo como 7 ou 12.', 'bot error');
-  }
-
-  function formatNumber(n){
-    if(Number.isInteger(n)) return String(n);
-    return n.toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
-  }
-
-  function showResult(sym, a, b, resultado){
-    addLine(a+' <span class="op">'+sym+'</span> '+b+' <span class="op">=</span> <span class="res">'+formatNumber(resultado)+'</span> ✅', 'equation');
-  }
-
-  function repeatedAddition(a, times){
-    if(times<=0 || times>10) return null;
-    var parts = [];
-    for(var i=0;i<times;i++){ parts.push(a); }
-    return parts.join(' + ');
-  }
-
-  function explainResult(opKey, a, b, resultado){
-    var r = formatNumber(resultado);
-    if(opKey==='add'){
-      return '🤖 Somar é juntar duas quantidades em uma só. '+a+' bolinhas ⚪ mais '+b+' bolinhas ⚪ formam um grupo só, com '+a+' + '+b+' = '+r+' bolinhas ao todo.';
-    }
-    if(opKey==='sub'){
-      return '🤖 Subtrair é tirar uma quantidade de outra. De '+a+' bolinhas ⚪ no quadro, apagando '+b+' delas, restam '+a+' − '+b+' = '+r+' bolinhas.';
-    }
-    if(opKey==='mul'){
-      var soma = repeatedAddition(a, b);
-      var passos = soma ? soma+' = '+r : a+' somado '+b+' vezes = '+r;
-      return '🤖 Multiplicar é um jeito rápido de somar o mesmo número várias vezes. '+a+' × '+b+' é o mesmo que '+passos+'.';
-    }
-    var sobra = Number.isInteger(resultado)
-      ? 'a divisão é exata, sem sobrar nada.'
-      : a+' não se divide em partes inteiras, por isso o resultado fica com vírgula.';
-    return '🤖 Dividir é repartir uma quantidade em partes iguais. Separando '+a+' bolinhas ⚪ em '+b+' grupos iguais, cada grupo fica com '+r+' — '+sobra;
-  }
-
-  function showTabuada(n, linhas){
-    addLine('🤖 Aqui está a tabuada do <b>'+n+'</b>:');
-    var host = document.createElement('div');
-    host.className = 'table-grid';
-    terminal.appendChild(host);
-    linhas.forEach(function(linha){
-      var s = document.createElement('span');
-      s.textContent = n+' × '+linha.i+' = '+linha.resultado;
-      s.style.animationDelay = (linha.i*35)+'ms';
-      host.appendChild(s);
-    });
-    terminal.scrollTop = terminal.scrollHeight;
-  }
-
-  /* ---------- exit ---------- */
-  function doExit(){
-    board.classList.add('wiping');
-    setTimeout(function(){
-      terminal.innerHTML = '';
-      stageArea.innerHTML = '';
-      addLine('🤖 Tchau'+(state.name ? ', '+escapeHtml(state.name) : '')+'! Bons estudos! 👋📚');
-      stageArea.innerHTML = '<div class="actions"><button class="ghost" id="restart">Começar de novo ↺</button></div>';
-      document.getElementById('restart').addEventListener('click', function(){
-        state = { name:null, openOp:null };
-        terminal.innerHTML = '';
-        renderNameForm();
-      });
-    }, 420);
-    setTimeout(function(){ board.classList.remove('wiping'); }, 900);
-  }
-
-  renderNameForm();
-})();
-</script>
 </body>
 </html>
